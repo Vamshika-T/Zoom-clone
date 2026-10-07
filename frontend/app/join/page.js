@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Video, Link2 } from "lucide-react";
+import { getMeeting } from "../../lib/api";
 
 function JoinPageContent() {
   const router = useRouter();
@@ -20,7 +21,7 @@ function JoinPageContent() {
     }
   }, [searchParams]);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     setError("");
 
@@ -37,9 +38,20 @@ function JoinPageContent() {
       return;
     }
 
-    router.push(
-      `/meeting/${cleanMeetingId}?name=${encodeURIComponent(cleanName)}`
-    );
+    try {
+      const meeting = await getMeeting(cleanMeetingId);
+
+      if (meeting.status === "cancelled") {
+        setError("This meeting has been cancelled.");
+        return;
+      }
+
+      router.push(
+        `/meeting/${cleanMeetingId}?name=${encodeURIComponent(cleanName)}`
+      );
+    } catch (err) {
+      setError(err.message || "Meeting not found.");
+    }
   }
 
   return (

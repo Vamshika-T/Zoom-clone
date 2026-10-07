@@ -1352,8 +1352,20 @@ export default function MeetingRoom({ meetingId }) {
                  * ------------------------------------------------
                  */
 
+                let loggedInUser = null;
+
+                try {
+                    const storedUser = localStorage.getItem("auth_user");
+
+                    if (storedUser) {
+                        loggedInUser = JSON.parse(storedUser);
+                    }
+                } catch {
+                    loggedInUser = null;
+                }
+
                 const displayName = hostMode
-                    ? "Demo User"
+                    ? loggedInUser?.name?.trim() || "Demo User"
                     : queryName?.trim();
 
                 if (!displayName) {
@@ -1428,6 +1440,11 @@ export default function MeetingRoom({ meetingId }) {
                     participant
                 );
             } catch (err) {
+                if (err.message === "This meeting has been cancelled.") {
+                    setError(err.message);
+                    return;
+                }
+
                 console.error(
                     "[Meeting] Join failed:",
                     err
@@ -2028,6 +2045,33 @@ export default function MeetingRoom({ meetingId }) {
                     <p className="text-sm text-white/70">
                         Loading meeting...
                     </p>
+                </div>
+            </main>
+        );
+    }
+    if (meeting?.status === "cancelled") {
+        return (
+            <main className="flex min-h-screen items-center justify-center bg-[#0f1114] px-6 text-white">
+                <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#17181a] p-8 text-center shadow-2xl">
+                    <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-yellow-400/10 text-yellow-300">
+                        !
+                    </div>
+
+                    <h1 className="text-2xl font-semibold">
+                        Meeting Cancelled
+                    </h1>
+
+                    <p className="mt-3 text-sm leading-6 text-white/60">
+                        This meeting has been cancelled by the host.
+                        You can no longer join this meeting.
+                    </p>
+
+                    <button
+                        onClick={() => router.push("/")}
+                        className="mt-7 rounded-lg bg-[#2d8cff] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#1677e8]"
+                    >
+                        Back to Home
+                    </button>
                 </div>
             </main>
         );

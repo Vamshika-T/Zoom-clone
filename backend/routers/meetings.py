@@ -249,6 +249,11 @@ def join_existing_meeting(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Meeting not found",
         )
+    if meeting.status == "cancelled":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This meeting has been cancelled.",
+        )
 
     display_name = join_data.display_name.strip()
 
