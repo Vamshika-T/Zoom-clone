@@ -25,18 +25,31 @@ class ConnectionManager:
         meeting_id: str,
         participant_id: int | None,
         websocket: WebSocket,
-    ):
+    ) -> bool:
+        """
+        Remove a participant connection only if this websocket is
+        still the participant's active websocket.
+
+        Returns True if this websocket was the active connection.
+        Returns False if the participant has already reconnected
+        through a newer websocket.
+        """
+        was_active_connection = False
+
         if participant_id is not None:
             room_participants = self.participants.get(meeting_id)
 
             if room_participants:
                 if room_participants.get(participant_id) is websocket:
                     del room_participants[participant_id]
+                    was_active_connection = True
 
                 if not room_participants:
                     del self.participants[meeting_id]
 
         self.disconnect(meeting_id, websocket)
+
+        return was_active_connection
 
     def disconnect(self, meeting_id: str, websocket: WebSocket):
         connections = self.rooms.get(meeting_id)

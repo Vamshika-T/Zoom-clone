@@ -161,13 +161,18 @@ async def meeting_websocket(
             )
 
     except WebSocketDisconnect:
-        manager.unregister_participant(
+        was_active_connection = manager.unregister_participant(
             meeting_id,
             participant_id,
             websocket,
         )
 
-        # Mark participant as having left the meeting.
+    # If this websocket was replaced by a newer connection,
+    # do not mark the participant as having left.
+        if not was_active_connection:
+            return
+
+    # Mark participant as having left the meeting.
         if participant_id is not None:
             db = SessionLocal()
 
