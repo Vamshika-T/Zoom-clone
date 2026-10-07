@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from security import hash_password
 from fastapi import FastAPI
@@ -25,12 +26,21 @@ app = FastAPI(
 # CORS
 # ---------------------------------------------------------
 
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+
+allow_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://zoom-clone-pearl-iota.vercel.app",
+
+]
+
+if FRONTEND_URL:
+    allow_origins.append(FRONTEND_URL)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
